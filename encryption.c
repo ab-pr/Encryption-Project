@@ -1,44 +1,54 @@
-#include <cstddef>
 #include <stdio.h>
+#include <string.h>
 
-int CheckInput(char* av1, char* av2);
-int Encrypt(char* av1, char* av2);
+#define BUFFER_SIZE 1024
+
+
+void XorEncrypt(const char *input, const char *key, char *output);
+void XorDecrypt(const char *input, const char *key, char *output);
+
 
 int
 main(int argc, char* argv[]) {
-	int checkedInput = CheckInput(argv[1], argv[2]);
-	switch (checkedInput) {
 
-	case 1:
-		puts("arg1 can't be type: NULL'");
-		break;
-	
-	case 2:
-		puts("arg2 can't be type: NULL'");
-		break;
+    if (argc < 4) {
+        fprintf(stderr, "Usage: %s -e/-d <key> <message>\n", argv[0]);
+        return 1;
+    }
 
-	default:
-		break;
+    const char *mode = argv[1];
+    const char *key = argv[2];
+    char output[BUFFER_SIZE];
 
-	}
+    if (argc > 4) {
+        fprintf(stderr, "Too many arguments. Only one message can be processed.\n");
+        return 1;
+    }
 
-	Encrypt(argv[1], argv[2]);
-
-	return 0;
-}
-
-int
-CheckInput(char* av1, char* av2) {
-	if (av1 == NULL)
-		return 1;
-
-	if (av2 == NULL)
-		return 2;
+    if (strcmp(mode, "-e") == 0) {
+        XorEncrypt(argv[3], key, output);
+        printf("Encrypted message: %s\n", output);
+    } else if (strcmp(mode, "-d") == 0) {
+        XorDecrypt(argv[3], key, output);
+        printf("Decrypted message: %s\n", output);
+    } else {
+        fprintf(stderr, "Invalid mode. Use '-e' for encrypt or '-d' for decrypt.\n");
+        return 1;
+    }
 
 	return 0;
 }
 
-int
-Encrypt(char* av1, char* av2) {
-	return 0;
+void
+XorEncrypt(const char *input, const char *key, char *output) {
+    size_t keyLen = strlen(key);
+    for (size_t i = 0; i < strlen(input); i++) {
+        output[i] = input[i] ^ key[i % keyLen];
+    }
+    output[strlen(input)] = '\0';
+}
+
+void
+XorDecrypt(const char *input, const char *key, char *output) {
+    XorEncrypt(input, key, output);
 }
